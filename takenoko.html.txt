@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAKE vs KINO - 最終聖戦</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Tokyo+Zoo&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --take-green: #4ade80;
+            --take-dark: #14532d;
+            --kino-brown: #fbbf24;
+            --kino-dark: #78350f;
+            --bg-color: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Mochiy Pop One', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* 背景のアニメーション要素 */
+        .floating-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .emoji {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.3;
+            animation: floatUp 10s infinite linear;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-10vh) rotate(360deg); }
+        }
+
+        /* ヘッダー */
+        header {
+            text-align: center;
+            padding: 4rem 1rem;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Zen Tokyo Zoo', cursive;
+            font-size: 5rem;
+            text-shadow: 4px 4px 0px #000;
+            margin-bottom: 1rem;
+            animation: glitch 1s infinite alternate;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 4px 4px 0px #ff00de; }
+            100% { text-shadow: -4px -4px 0px #00ffea; }
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #ccc;
+        }
+
+        /* メインバトルエリア */
+        .battle-arena {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            flex-wrap: wrap;
+            padding: 2rem;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .fighter-card {
+            flex: 1;
+            min-width: 300px;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.1s;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid transparent;
+            cursor: pointer;
+        }
+
+        .take-side {
+            background: linear-gradient(135deg, var(--take-dark), #000);
+            border-color: var(--take-green);
+            box-shadow: 0 0 20px var(--take-green);
+        }
+
+        .kino-side {
+            background: linear-gradient(135deg, var(--kino-dark), #000);
+            border-color: var(--kino-brown);
+            box-shadow: 0 0 20px var(--kino-brown);
+        }
+
+        .mascot {
+            font-size: 8rem;
+            display: block;
+            margin: 1rem 0;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .fighter-card:hover .mascot {
+            transform: scale(1.2);
+        }
+
+        .buy-btn {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 1rem 2rem;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: #000;
+        }
+
+        .btn-take {
+            background-color: var(--take-green);
+            box-shadow: 0 4px 0 #15803d;
+        }
+
+        .btn-kino {
+            background-color: var(--kino-brown);
+            box-shadow: 0 4px 0 #b45309;
+        }
+
+        .buy-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        /* ライブチャートセクション */
+        .live-stats {
+            max-width: 800px;
+            margin: 4rem auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        /* フッター */
+        footer {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 768px) {
+            h1 { font-size: 3rem; }
+            .battle-arena { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="floating-bg" id="bgContainer"></div>
+
+    <header>
+        <h1>TAKE VS KINO</h1>
+        <p class="subtitle">人類最大の派閥争い、ブロックチェーンで決着。</p>
+        <p style="margin-top: 10px; color: #ffeb3b; font-weight: bold;">⚠️ SCAMではありません。MEMEです。</p>
+    </header>
+
+    <section class="live-stats">
+        <h2>🔥 リアルタイム戦況 (Dominance)</h2>
+        <canvas id="battleChart"></canvas>
+    </section>
+
+    <div class="battle-arena">
+        <div class="fighter-card take-side" id="cardTake">
+            <h3>Team TAKENOKO</h3>
+            <span class="mascot">🎍</span>
+            <p>サクサクの食感。圧倒的な造形美。<br>古参の誇りをかけて。</p>
+            <div style="margin: 20px 0; font-size: 2rem;">$TAKE</div>
+            <button class="buy-btn btn-take" onclick="buyToken('TAKE')">Buy $TAKE</button>
+        </div>
+
+        <div class="fighter-card kino-side" id="cardKino">
+            <h3>Team KINOKO</h3>
+            <span class="mascot">🍄</span>
+            <p>チョコとクラッカーの黄金比。<br>大衆の支持を背に。</p>
+            <div style="margin: 20px 0; font-size: 2rem;">$KINO</div>
+            <button class="buy-btn btn-kino" onclick="buyToken('KINO')">Buy $KINO</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>Contract Address: 0x000... (Coming Soon)</p>
+        <p>© 2024 Bamboo vs Mushroom War. No financial advice.</p>
+    </footer>
+
+    <script>
+        // 1. 背景の浮遊エフェクト生成
+        const bgContainer = document.getElementById('bgContainer');
+        const emojis = ['🎍', '🍄', '🚀', '💥', '💰'];
+
+        function createEmoji() {
+            const el = document.createElement('div');
+            el.classList.add('emoji');
+            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            bgContainer.appendChild(el);
+
+            setTimeout(() => {
+                el.remove();
+            }, 10000);
+        }
+
+        setInterval(createEmoji, 500);
+
+        // 2. 3Dカードチルトエフェクト
+        document.querySelectorAll('.fighter-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((y - centerY) / centerY) * -10;
+                const rotateY = ((x - centerX) / centerX) * 10;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+            });
+        });
+
+        // 3. リアルタイムチャート (Chart.js)
+        const ctx = document.getElementById('battleChart').getContext('2d');
+        let takeScore = 50;
+        let kinoScore = 50;
+
+        const battleChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['TAKENOKO ($TAKE)', 'KINOKO ($KINO)'],
+                datasets: [{
+                    label: 'Market Cap Dominance',
+                    data: [takeScore, kinoScore],
+                    backgroundColor: ['#4ade80', '#fbbf24'],
+                    borderColor: ['#14532d', '#78350f'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: 'white' }
+                    },
+                    y: {
+                        ticks: { color: 'white', font: { size: 14, weight: 'bold' } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        // 戦況をランダムに更新する関数（デモ用）
+        function updateBattle() {
+            const change = (Math.random() - 0.5) * 5; // -2.5 ~ +2.5の変動
+            takeScore = Math.max(0, Math.min(100, takeScore + change));
+            kinoScore = 100 - takeScore;
+
+            battleChart.data.datasets[0].data = [takeScore, kinoScore];
+            battleChart.update();
+        }
+
+        setInterval(updateBattle, 2000);
+
+        // 4. 購入ボタンのアクション
+        function buyToken(token) {
+            alert(`🚀 ${token}コインを購入しました！\n（デモサイトのため実際のトランザクションは発生しません）`);
+            
+            // 購入した方のスコアを一気に増やす演出
+            if(token === 'TAKE') {
+                takeScore = Math.min(100, takeScore + 10);
+            } else {
+                takeScore = Math.max(0, takeScore - 10);
+            }
+            kinoScore = 100 - takeScore;
+            battleChart.data.datasets[0].data = [takeScore, kinoScore];
+            battleChart.update();
+        }
+    </script>
+</body>
+</html>
